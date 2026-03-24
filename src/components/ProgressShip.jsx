@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const meats = ["🍖", "🍖 MEAT!", "🍖🍖 MORE MEAT!!", "🍖🍖🍖 NIKU!!!"];
 
@@ -6,10 +6,14 @@ export default function ProgressShip({ pct }) {
   const [bouncing, setBouncing] = useState(false);
   const [idx, setIdx] = useState(0);
 
+  const timerRef = useRef(null);
+  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
+
   const handleClick = () => {
     setBouncing(true);
     setIdx(i => (i + 1) % meats.length);
-    setTimeout(() => setBouncing(false), 700);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setBouncing(false), 700);
   };
 
   if (pct < 3) return null;

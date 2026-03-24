@@ -9,6 +9,10 @@ import HoverButton from "./components/HoverButton";
 import Toast from "./components/Toast";
 import ProgressShip from "./components/ProgressShip";
 
+const TOAST_DURATION = 3500;
+const markAllStyle = color => ({ padding: "5px 10px", fontSize: 11, fontWeight: 600, borderRadius: 6, border: `1px solid ${color}44`, background: "transparent", color, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap" });
+const markAllHover = color => ({ background: `${color}18` });
+
 function expandRange(s, e) { const a = []; for (let i = s; i <= e; i++) a.push(i); return a; }
 function getArcEpisodes(arc) { return expandRange(arc.eps[0], arc.eps[1]); }
 function isSkippable(ep) { return FILLER_EPS.has(ep); }
@@ -56,7 +60,7 @@ export default function App() {
         setSeenMilestones(p => new Set([...p, m.ep]));
         setToast(m);
         if (toastTimer.current) clearTimeout(toastTimer.current);
-        toastTimer.current = setTimeout(() => setToast(null), 3500);
+        toastTimer.current = setTimeout(() => setToast(null), TOAST_DURATION);
         break;
       }
     }
@@ -72,7 +76,6 @@ export default function App() {
     return e;
   }, []);
 
-  // All episodes that actually appear as buttons in the UI (within arc ranges)
   const allTrackableEps = useMemo(() => {
     const e = [];
     SAGAS.forEach(s => s.arcs.forEach(a => { for (let i = a.eps[0]; i <= a.eps[1]; i++) e.push(i); }));
@@ -117,15 +120,15 @@ export default function App() {
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: t.bg, color: t.text, fontFamily: "'Outfit',sans-serif", paddingBottom: 40, transition: "background 0.4s ease, color 0.3s ease" }}>
+    <div style={{ minHeight: "100vh", background: t.bg, color: t.text, fontFamily: "'Outfit',sans-serif", paddingBottom: 40, transition: "background 0.6s ease, color 0.5s ease" }}>
       <Toast toast={toast} t={t} />
 
       {/* HEADER */}
-      <div style={{ background: t.headerBg, borderBottom: `1px solid ${t.headerBorder}`, padding: "24px 20px 20px", transition: "all 0.3s ease" }}>
+      <div style={{ background: t.headerBg, borderBottom: `1px solid ${t.headerBorder}`, padding: "24px 20px 20px", transition: "all 0.6s ease" }}>
         <div style={{ maxWidth: 800, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
-          <h1 style={{ margin: 0, lineHeight: 1.1 }}>
+          <h1 style={{ margin: 0, lineHeight: 1.1, minWidth: 0 }}>
             <span style={{ fontFamily: "'Pirata One',cursive", fontSize: "clamp(28px,5vw,42px)", color: t.accent, letterSpacing: 2, textShadow: `0 2px 16px ${t.accent}40` }}>ONE PIECE</span><br />
-            <span style={{ fontSize: "clamp(11px,2vw,14px)", fontWeight: 400, color: t.textMuted, letterSpacing: 3, textTransform: "uppercase" }}>Complete Series Tracker</span>
+            <span style={{ fontSize: "clamp(11px,2vw,14px)", fontWeight: 400, color: t.textMuted, letterSpacing: 3, textTransform: "uppercase", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Complete Series Tracker</span>
           </h1>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <HoverButton
@@ -147,7 +150,7 @@ export default function App() {
       {/* STATS BAR */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 10, maxWidth: 800, margin: "16px auto 0", padding: "0 20px" }}>
         {[{ val: stats.done, lbl: "Watched" }, { val: stats.remaining, lbl: "Remaining" }, { val: currentArcInfo.arc, lbl: "Current Arc", sm: true }, { val: `~${stats.hoursLeft}h`, lbl: "Watch Time Left" }].map((s, i) => (
-          <div key={i} style={{ background: t.card, border: `1px solid ${t.cardBorder}`, borderRadius: 12, padding: "16px 12px", textAlign: "center", transition: "all 0.3s ease" }}>
+          <div key={i} style={{ background: t.card, border: `1px solid ${t.cardBorder}`, borderRadius: 12, padding: "16px 12px", textAlign: "center", transition: "all 0.6s ease" }}>
             <div style={{ fontSize: s.sm ? 18 : 28, fontWeight: 800, color: t.text, lineHeight: 1.1 }}>{s.val}</div>
             <div style={{ fontSize: 11, color: t.textMuted, letterSpacing: 1.5, textTransform: "uppercase", marginTop: 4, fontWeight: 500 }}>{s.lbl}</div>
           </div>
@@ -186,7 +189,7 @@ export default function App() {
             const isOpen = expandedSaga === saga.name;
             const isComplete = ss.pct === 100 && ss.total > 0;
             return (
-              <div key={saga.name} style={{ background: t.card, border: `1px solid ${t.cardBorder}`, borderLeft: `3px solid ${saga.color}`, borderRadius: 12, overflow: "hidden", transition: "all 0.3s ease" }}>
+              <div key={saga.name} style={{ background: t.card, border: `1px solid ${t.cardBorder}`, borderLeft: `3px solid ${saga.color}`, borderRadius: 12, overflow: "hidden", transition: "all 0.6s ease" }}>
                 <div
                   onClick={() => setExpandedSaga(isOpen ? null : saga.name)}
                   onMouseEnter={() => setHoveredSaga(saga.name)}
@@ -205,8 +208,8 @@ export default function App() {
                       <div style={{ height: "100%", borderRadius: 3, transition: "width 0.4s", width: `${ss.pct}%`, background: saga.color }} />
                     </div>
                     <HoverButton
-                      baseStyle={{ padding: "5px 10px", fontSize: 11, fontWeight: 600, borderRadius: 6, border: `1px solid ${saga.color}44`, background: "transparent", color: saga.color, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap" }}
-                      hoverStyle={{ background: `${saga.color}18` }}
+                      baseStyle={markAllStyle(saga.color)}
+                      hoverStyle={markAllHover(saga.color)}
                       onClick={e => { e.stopPropagation(); markSaga(saga, !isComplete); }}
                     >{isComplete ? "Unmark All" : "Mark All"}</HoverButton>
                     <span style={{ fontSize: 10, color: t.textMuted, transition: "transform 0.2s ease", transform: isOpen ? "rotate(180deg)" : "none" }}>▼</span>
@@ -217,7 +220,7 @@ export default function App() {
                     {saga.arcs.map(arc => {
                       const as = getArcStats(arc), arcKey = `${saga.name}-${arc.name}`, arcOpen = expandedArc === arcKey, arcComplete = as.pct === 100 && as.total > 0;
                       return (
-                        <div key={arcKey} style={{ background: t.cardAlt, border: `1px solid ${arcComplete ? saga.color + "55" : t.cardBorder}`, borderRadius: 10, overflow: "hidden", transition: "all 0.3s ease" }}>
+                        <div key={arcKey} style={{ background: t.cardAlt, border: `1px solid ${arcComplete ? saga.color + "55" : t.cardBorder}`, borderRadius: 10, overflow: "hidden", transition: "all 0.6s ease" }}>
                           <div
                             onClick={() => setExpandedArc(arcOpen ? null : arcKey)}
                             onMouseEnter={() => setHoveredArc(arcKey)}
@@ -236,8 +239,8 @@ export default function App() {
                                 <div style={{ height: "100%", borderRadius: 3, transition: "width 0.3s", width: `${as.pct}%`, background: saga.color }} />
                               </div>
                               <HoverButton
-                                baseStyle={{ padding: "5px 10px", fontSize: 11, fontWeight: 600, borderRadius: 6, border: `1px solid ${saga.color}44`, background: "transparent", color: saga.color, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap" }}
-                                hoverStyle={{ background: `${saga.color}18` }}
+                                baseStyle={markAllStyle(saga.color)}
+                                hoverStyle={markAllHover(saga.color)}
                                 onClick={e => { e.stopPropagation(); markArc(arc, !arcComplete); }}
                               >{arcComplete ? "Unmark All" : "Mark All"}</HoverButton>
                               <span style={{ fontSize: 10, color: t.textMuted, transition: "transform 0.2s ease", transform: arcOpen ? "rotate(180deg)" : "none" }}>▼</span>
@@ -289,7 +292,7 @@ export default function App() {
               { n: SAGAS.reduce((a, s) => a + s.arcs.length, 0), l: "Story Arcs" },
               { n: `~${Math.round((allCanonEps.length * 24) / 60)}h`, l: "Canon Runtime" },
             ].map((f, i) => (
-              <div key={i} style={{ background: t.card, border: `1px solid ${t.cardBorder}`, borderRadius: 12, padding: "16px 12px", textAlign: "center", transition: "all 0.3s ease" }}>
+              <div key={i} style={{ background: t.card, border: `1px solid ${t.cardBorder}`, borderRadius: 12, padding: "16px 12px", textAlign: "center", transition: "all 0.6s ease" }}>
                 <div style={{ fontSize: 24, fontWeight: 800, color: t.accent }}>{f.n}</div>
                 <div style={{ fontSize: 11, color: t.textMuted, letterSpacing: 1, textTransform: "uppercase", marginTop: 4 }}>{f.l}</div>
               </div>
@@ -380,7 +383,7 @@ export default function App() {
           <h2 style={{ fontSize: 12, letterSpacing: 3, color: t.textMuted, fontWeight: 600, marginBottom: 14, marginTop: 28 }}>MILESTONES</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {MILESTONES.map(m => { const unlocked = watched.has(m.ep); return (
-              <div key={m.ep} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", background: unlocked ? t.card : "transparent", border: `1px solid ${unlocked ? t.cardBorder : "transparent"}`, borderRadius: 10, opacity: unlocked ? 1 : 0.3, transition: "all 0.3s ease" }}>
+              <div key={m.ep} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", background: unlocked ? t.card : "transparent", border: `1px solid ${unlocked ? t.cardBorder : "transparent"}`, borderRadius: 10, opacity: unlocked ? 1 : 0.3, transition: "all 0.6s ease" }}>
                 <span style={{ fontSize: 22 }}>{unlocked ? m.emoji : "🔒"}</span>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 600, color: t.text }}>{unlocked ? m.msg : "???"}</div>

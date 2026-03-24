@@ -1,4 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import "./datepicker.css";
 import { SAGAS, FILLER_EPS, MILESTONES, TOTAL_EPS, themes } from "./data";
 import { loadStorage, useStorageSync } from "./hooks/useStorage";
 import EpButton from "./components/EpButton";
@@ -22,6 +25,9 @@ export default function App() {
   const [mode, setMode] = useState("dark");
   const [toast, setToast] = useState(null);
   const [seenMilestones, setSeenMilestones] = useState(new Set());
+  const [paceMode, setPaceMode] = useState("date");
+  const [targetDate, setTargetDate] = useState(null);
+  const [dailyPace, setDailyPace] = useState(1);
   const toastTimer = useRef(null);
   const t = themes[mode];
 
@@ -32,11 +38,13 @@ export default function App() {
       if (d.skipFiller !== undefined) setSkipFiller(d.skipFiller);
       if (d.mode) setMode(d.mode);
       if (d.seenMilestones) setSeenMilestones(new Set(d.seenMilestones));
+      if (d.targetDate) setTargetDate(new Date(d.targetDate));
+      if (d.dailyPace) setDailyPace(d.dailyPace);
     }
     setLoaded(true);
   }, []);
 
-  useStorageSync(watched, skipFiller, mode, seenMilestones, loaded);
+  useStorageSync(watched, skipFiller, mode, seenMilestones, loaded, targetDate, dailyPace);
 
   useEffect(() => {
     document.body.style.backgroundColor = mode === "dark" ? "#080E1A" : "#F5F0EB";
@@ -285,6 +293,87 @@ export default function App() {
                 <div style={{ fontSize: 11, color: t.textMuted, letterSpacing: 1, textTransform: "uppercase", marginTop: 4 }}>{f.l}</div>
               </div>
             ))}
+          </div>
+
+          {/* WATCH PACE CALCULATOR */}
+          <h2 style={{ fontSize: 12, letterSpacing: 3, color: t.textMuted, fontWeight: 600, marginBottom: 14, marginTop: 28 }}>WATCH PACE CALCULATOR</h2>
+          <div style={{ background: t.card, border: `1px solid ${t.cardBorder}`, borderRadius: 12, padding: "20px", marginBottom: 28, "--dp-bg": t.card, "--dp-header": t.cardAlt, "--dp-border": t.cardBorder, "--dp-text": t.text, "--dp-muted": t.textMuted, "--dp-hover": t.cardHover, "--dp-accent": t.accent }}>
+            {/* Mode pill toggle */}
+            <div style={{ display: "flex", background: t.pillBg, borderRadius: 20, overflow: "hidden", border: `1px solid ${t.pillBorder}`, width: "fit-content", marginBottom: 20 }}>
+              {[{ val: "date", label: "By Date" }, { val: "pace", label: "By Pace" }].map(opt => (
+                <button key={opt.val} onClick={() => setPaceMode(opt.val)} style={{ padding: "7px 18px", fontSize: 13, fontWeight: paceMode === opt.val ? 600 : 400, background: paceMode === opt.val ? `${t.accent}22` : "none", color: paceMode === opt.val ? t.accent : t.textMuted, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", transition: "all 0.15s ease" }}>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+
+            {paceMode === "date" ? (() => {
+              const today = new Date(); today.setHours(0,0,0,0);
+              const daysLeft = targetDate ? Math.ceil((targetDate - today) / 86400000) : null;
+              const epsPerDay = daysLeft > 0 && stats.remaining > 0 ? Math.ceil(stats.remaining / daysLeft) : null;
+              const isPast = daysLeft !== null && daysLeft <= 0;
+              const statusColor = isPast ? "#EF4444" : epsPerDay === null ? t.textMuted : epsPerDay <= 1 ? "#4ADE80" : epsPerDay <= 3 ? t.accent : "#EF4444";
+              const statusLabel = isPast ? "Date passed" : epsPerDay === null ? "Set a date" : epsPerDay <= 1 ? "Very chill pace" : epsPerDay <= 3 ? "On track" : "Ambitious pace";
+              return (
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                    <label style={{ fontSize: 14, color: t.textSoft, fontWeight: 500 }}>Target date</label>
+                    <div className="op-datepicker">
+                      <DatePicker
+                        selected={targetDate}
+                        onChange={date => setTargetDate(date)}
+                        minDate={new Date()}
+                        placeholderText="Pick a date"
+                        dateFormat="MMM d, yyyy"
+                        customInput={
+                          <input style={{ background: t.inputBg, border: `1px solid ${t.inputBorder}`, borderRadius: 8, padding: "7px 12px", fontSize: 14, color: t.text, fontFamily: "'Outfit',sans-serif", cursor: "pointer", outline: "none", width: 150 }} />
+                        }
+                      />
+                    </div>
+                    {targetDate && <span style={{ fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 20, background: `${statusColor}22`, color: statusColor }}>{statusLabel}</span>}
+                  </div>
+                  {epsPerDay && !isPast && (
+                    <div style={{ marginTop: 16, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10 }}>
+                      {[{ n: epsPerDay, l: "Eps / Day Needed" }, { n: daysLeft, l: "Days Left" }, { n: stats.remaining, l: "Episodes Left" }].map((f, i) => (
+                        <div key={i} style={{ background: t.cardAlt, border: `1px solid ${t.cardBorder}`, borderRadius: 10, padding: "14px 12px", textAlign: "center" }}>
+                          <div style={{ fontSize: 24, fontWeight: 800, color: t.accent }}>{f.n}</div>
+                          <div style={{ fontSize: 11, color: t.textMuted, letterSpacing: 1, textTransform: "uppercase", marginTop: 4 }}>{f.l}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {isPast && <p style={{ marginTop: 12, fontSize: 14, color: "#EF4444" }}>That date has already passed — pick a future date.</p>}
+                </div>
+              );
+            })() : (() => {
+              const pace = Math.max(1, Math.floor(dailyPace));
+              const daysToFinish = stats.remaining > 0 ? Math.ceil(stats.remaining / pace) : 0;
+              const finishDate = new Date(Date.now() + daysToFinish * 86400000).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+              const statusColor = pace >= 4 ? "#EF4444" : pace >= 2 ? t.accent : "#4ADE80";
+              const statusLabel = pace >= 4 ? "Ambitious pace" : pace >= 2 ? "On track" : "Very chill pace";
+              return (
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                    <label style={{ fontSize: 14, color: t.textSoft, fontWeight: 500 }}>Episodes per day</label>
+                    <input type="number" min={1} max={50} value={dailyPace} onChange={e => setDailyPace(Math.max(1, parseInt(e.target.value) || 1))}
+                      style={{ background: t.inputBg, border: `1px solid ${t.inputBorder}`, borderRadius: 8, padding: "7px 12px", fontSize: 14, color: t.text, fontFamily: "'Outfit',sans-serif", width: 80 }} />
+                    <span style={{ fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 20, background: `${statusColor}22`, color: statusColor }}>{statusLabel}</span>
+                  </div>
+                  {stats.remaining > 0 ? (
+                    <div style={{ marginTop: 16, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10 }}>
+                      {[{ n: finishDate, l: "Estimated Finish", sm: true }, { n: daysToFinish, l: "Days to Finish" }, { n: stats.remaining, l: "Episodes Left" }].map((f, i) => (
+                        <div key={i} style={{ background: t.cardAlt, border: `1px solid ${t.cardBorder}`, borderRadius: 10, padding: "14px 12px", textAlign: "center" }}>
+                          <div style={{ fontSize: f.sm ? 16 : 24, fontWeight: 800, color: t.accent, lineHeight: 1.2 }}>{f.n}</div>
+                          <div style={{ fontSize: 11, color: t.textMuted, letterSpacing: 1, textTransform: "uppercase", marginTop: 4 }}>{f.l}</div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p style={{ marginTop: 12, fontSize: 14, color: "#4ADE80" }}>You've finished everything! 🏴‍☠️</p>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           <h2 style={{ fontSize: 12, letterSpacing: 3, color: t.textMuted, fontWeight: 600, marginBottom: 14, marginTop: 28 }}>MILESTONES</h2>

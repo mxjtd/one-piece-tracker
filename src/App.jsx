@@ -39,6 +39,10 @@ export default function App() {
   useStorageSync(watched, skipFiller, mode, seenMilestones, loaded);
 
   useEffect(() => {
+    document.body.style.backgroundColor = mode === "dark" ? "#080E1A" : "#F5F0EB";
+  }, [mode]);
+
+  useEffect(() => {
     for (const m of MILESTONES) {
       if (watched.has(m.ep) && !seenMilestones.has(m.ep)) {
         setSeenMilestones(p => new Set([...p, m.ep]));

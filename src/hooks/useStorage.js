@@ -11,7 +11,7 @@ export function loadStorage() {
   }
 }
 
-export function useStorageSync(watched, skipFiller, mode, seenMilestones, loaded) {
+export function useStorageSync(watched, skipFiller, mode, seenMilestones, loaded, targetDate, dailyPace) {
   const timerRef = useRef(null);
 
   useEffect(() => {
@@ -26,10 +26,12 @@ export function useStorageSync(watched, skipFiller, mode, seenMilestones, loaded
             skipFiller,
             mode,
             seenMilestones: [...seenMilestones],
+            targetDate,
+            dailyPace,
           })
         );
       } catch {}
     }, 300);
     return () => clearTimeout(timerRef.current);
-  }, [watched, skipFiller, mode, seenMilestones, loaded]);
+  }, [watched, skipFiller, mode, seenMilestones, loaded, targetDate, dailyPace]);
 }

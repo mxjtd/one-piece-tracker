@@ -1,4 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import "./datepicker.css";
 import { SAGAS, FILLER_EPS, MILESTONES, TOTAL_EPS, themes } from "./data";
 import { loadStorage, useStorageSync } from "./hooks/useStorage";
 import EpButton from "./components/EpButton";
@@ -23,7 +26,7 @@ export default function App() {
   const [toast, setToast] = useState(null);
   const [seenMilestones, setSeenMilestones] = useState(new Set());
   const [paceMode, setPaceMode] = useState("date");
-  const [targetDate, setTargetDate] = useState("");
+  const [targetDate, setTargetDate] = useState(null);
   const [dailyPace, setDailyPace] = useState(1);
   const toastTimer = useRef(null);
   const t = themes[mode];
@@ -35,7 +38,7 @@ export default function App() {
       if (d.skipFiller !== undefined) setSkipFiller(d.skipFiller);
       if (d.mode) setMode(d.mode);
       if (d.seenMilestones) setSeenMilestones(new Set(d.seenMilestones));
-      if (d.targetDate) setTargetDate(d.targetDate);
+      if (d.targetDate) setTargetDate(new Date(d.targetDate));
       if (d.dailyPace) setDailyPace(d.dailyPace);
     }
     setLoaded(true);
@@ -294,7 +297,7 @@ export default function App() {
 
           {/* WATCH PACE CALCULATOR */}
           <h2 style={{ fontSize: 12, letterSpacing: 3, color: t.textMuted, fontWeight: 600, marginBottom: 14, marginTop: 28 }}>WATCH PACE CALCULATOR</h2>
-          <div style={{ background: t.card, border: `1px solid ${t.cardBorder}`, borderRadius: 12, padding: "20px", marginBottom: 28 }}>
+          <div style={{ background: t.card, border: `1px solid ${t.cardBorder}`, borderRadius: 12, padding: "20px", marginBottom: 28, "--dp-bg": t.card, "--dp-header": t.cardAlt, "--dp-border": t.cardBorder, "--dp-text": t.text, "--dp-muted": t.textMuted, "--dp-hover": t.cardHover, "--dp-accent": t.accent }}>
             {/* Mode pill toggle */}
             <div style={{ display: "flex", background: t.pillBg, borderRadius: 20, overflow: "hidden", border: `1px solid ${t.pillBorder}`, width: "fit-content", marginBottom: 20 }}>
               {[{ val: "date", label: "By Date" }, { val: "pace", label: "By Pace" }].map(opt => (
@@ -306,8 +309,7 @@ export default function App() {
 
             {paceMode === "date" ? (() => {
               const today = new Date(); today.setHours(0,0,0,0);
-              const target = targetDate ? new Date(targetDate) : null;
-              const daysLeft = target ? Math.ceil((target - today) / 86400000) : null;
+              const daysLeft = targetDate ? Math.ceil((targetDate - today) / 86400000) : null;
               const epsPerDay = daysLeft > 0 && stats.remaining > 0 ? Math.ceil(stats.remaining / daysLeft) : null;
               const isPast = daysLeft !== null && daysLeft <= 0;
               const statusColor = isPast ? "#EF4444" : epsPerDay === null ? t.textMuted : epsPerDay <= 1 ? "#4ADE80" : epsPerDay <= 3 ? t.accent : "#EF4444";
@@ -316,8 +318,18 @@ export default function App() {
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                     <label style={{ fontSize: 14, color: t.textSoft, fontWeight: 500 }}>Target date</label>
-                    <input type="date" value={targetDate} onChange={e => setTargetDate(e.target.value)}
-                      style={{ background: t.inputBg, border: `1px solid ${t.inputBorder}`, borderRadius: 8, padding: "7px 12px", fontSize: 14, color: t.text, fontFamily: "'Outfit',sans-serif", cursor: "pointer" }} />
+                    <div className="op-datepicker">
+                      <DatePicker
+                        selected={targetDate}
+                        onChange={date => setTargetDate(date)}
+                        minDate={new Date()}
+                        placeholderText="Pick a date"
+                        dateFormat="MMM d, yyyy"
+                        customInput={
+                          <input style={{ background: t.inputBg, border: `1px solid ${t.inputBorder}`, borderRadius: 8, padding: "7px 12px", fontSize: 14, color: t.text, fontFamily: "'Outfit',sans-serif", cursor: "pointer", outline: "none", width: 150 }} />
+                        }
+                      />
+                    </div>
                     {targetDate && <span style={{ fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 20, background: `${statusColor}22`, color: statusColor }}>{statusLabel}</span>}
                   </div>
                   {epsPerDay && !isPast && (

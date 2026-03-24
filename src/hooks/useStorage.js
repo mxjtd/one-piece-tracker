@@ -26,7 +26,7 @@ export function useStorageSync(watched, skipFiller, mode, seenMilestones, loaded
             skipFiller,
             mode,
             seenMilestones: [...seenMilestones],
-            targetDate,
+            targetDate: targetDate ? targetDate.toISOString() : null,
             dailyPace,
           })
         );

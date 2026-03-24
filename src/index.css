@@ -17,11 +17,3 @@ body {
   from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
   to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
-
-/* Mobile: stack controls, ensure tap targets */
-@media (max-width: 480px) {
-  .controls-bar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}

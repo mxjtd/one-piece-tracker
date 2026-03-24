@@ -52,7 +52,8 @@ export default function App() {
         break;
       }
     }
-  }, [watched]);
+    return () => { if (toastTimer.current) clearTimeout(toastTimer.current); };
+  }, [watched, seenMilestones]);
 
   const allCanonEps = useMemo(() => {
     const e = [];

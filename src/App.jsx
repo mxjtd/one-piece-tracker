@@ -60,8 +60,11 @@ export default function App() {
         break;
       }
     }
-    return () => { if (toastTimer.current) clearTimeout(toastTimer.current); };
   }, [watched, seenMilestones]);
+
+  useEffect(() => {
+    return () => { if (toastTimer.current) clearTimeout(toastTimer.current); };
+  }, []);
 
   const allCanonEps = useMemo(() => {
     const e = [];
@@ -232,6 +235,11 @@ export default function App() {
                               <div style={{ width: 48, height: 5, background: t.cardBorder, borderRadius: 3, overflow: "hidden" }}>
                                 <div style={{ height: "100%", borderRadius: 3, transition: "width 0.3s", width: `${as.pct}%`, background: saga.color }} />
                               </div>
+                              <HoverButton
+                                baseStyle={{ padding: "5px 10px", fontSize: 11, fontWeight: 600, borderRadius: 6, border: `1px solid ${saga.color}44`, background: "transparent", color: saga.color, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap" }}
+                                hoverStyle={{ background: `${saga.color}18` }}
+                                onClick={e => { e.stopPropagation(); markArc(arc, !arcComplete); }}
+                              >{arcComplete ? "Unmark All" : "Mark All"}</HoverButton>
                               <span style={{ fontSize: 10, color: t.textMuted, transition: "transform 0.2s ease", transform: arcOpen ? "rotate(180deg)" : "none" }}>▼</span>
                             </div>
                           </div>
@@ -244,13 +252,6 @@ export default function App() {
                                   return <EpButton key={ep} ep={ep} isW={watched.has(ep)} isFiller={FILLER_EPS.has(ep)} color={saga.color} onClick={() => toggleEp(ep)} t={t} />;
                                 })}
                               </div>
-                              <HoverButton
-                                baseStyle={{ width: "100%", padding: 10, border: `1px solid ${saga.color}44`, borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit',sans-serif", background: "transparent", color: saga.color, letterSpacing: 0.5 }}
-                                hoverStyle={{ background: `${saga.color}18` }}
-                                onClick={() => markArc(arc, !arcComplete)}
-                              >
-                                {arcComplete ? "Unmark All" : "Mark All Watched"}
-                              </HoverButton>
                             </div>
                           )}
                         </div>

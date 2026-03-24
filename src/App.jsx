@@ -189,7 +189,7 @@ export default function App() {
             const isOpen = expandedSaga === saga.name;
             const isComplete = ss.pct === 100 && ss.total > 0;
             return (
-              <div key={saga.name} style={{ background: t.card, border: `1px solid ${t.cardBorder}`, borderLeft: `3px solid ${saga.color}`, borderRadius: 12, overflow: "hidden", transition: "all 0.6s ease" }}>
+              <div key={saga.name} style={{ background: t.card, borderTop: `1px solid ${t.cardBorder}`, borderRight: `1px solid ${t.cardBorder}`, borderBottom: `1px solid ${t.cardBorder}`, borderLeft: `3px solid ${saga.color}`, borderRadius: 12, overflow: "hidden", transition: "all 0.6s ease" }}>
                 <div
                   onClick={() => setExpandedSaga(isOpen ? null : saga.name)}
                   onMouseEnter={() => setHoveredSaga(saga.name)}

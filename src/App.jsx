@@ -56,18 +56,25 @@ export default function App() {
     return e;
   }, []);
 
+  // All episodes that actually appear as buttons in the UI (within arc ranges)
+  const allTrackableEps = useMemo(() => {
+    const e = [];
+    SAGAS.forEach(s => s.arcs.forEach(a => { for (let i = a.eps[0]; i <= a.eps[1]; i++) e.push(i); }));
+    return e;
+  }, []);
+
   const stats = useMemo(() => {
-    const rel = skipFiller ? allCanonEps : expandRange(1, TOTAL_EPS);
+    const rel = skipFiller ? allCanonEps : allTrackableEps;
     const total = rel.length, done = rel.filter(e => watched.has(e)).length;
     return { total, done, remaining: total - done, pct: total > 0 ? (done / total) * 100 : 0, hoursLeft: Math.round(((total - done) * 24) / 60) };
-  }, [watched, skipFiller, allCanonEps]);
+  }, [watched, skipFiller, allCanonEps, allTrackableEps]);
 
   const currentArcInfo = useMemo(() => {
-    const cur = (skipFiller ? allCanonEps : expandRange(1, TOTAL_EPS)).find(ep => !watched.has(ep));
+    const cur = (skipFiller ? allCanonEps : allTrackableEps).find(ep => !watched.has(ep));
     if (!cur) return { arc: "All done!" };
     for (const s of SAGAS) for (const a of s.arcs) if (cur >= a.eps[0] && cur <= a.eps[1]) return { arc: a.name };
     return { arc: "—" };
-  }, [watched, skipFiller, allCanonEps]);
+  }, [watched, skipFiller, allCanonEps, allTrackableEps]);
 
   const toggleEp = useCallback(ep => setWatched(p => { const n = new Set(p); n.has(ep) ? n.delete(ep) : n.add(ep); return n; }), []);
   const markArc = useCallback((arc, mark) => setWatched(p => { const n = new Set(p); getArcEpisodes(arc).forEach(ep => mark ? n.add(ep) : n.delete(ep)); return n; }), []);

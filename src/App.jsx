@@ -71,6 +71,7 @@ export default function App() {
 
   const toggleEp = useCallback(ep => setWatched(p => { const n = new Set(p); n.has(ep) ? n.delete(ep) : n.add(ep); return n; }), []);
   const markArc = useCallback((arc, mark) => setWatched(p => { const n = new Set(p); getArcEpisodes(arc).forEach(ep => mark ? n.add(ep) : n.delete(ep)); return n; }), []);
+  const markSaga = useCallback((saga, mark) => setWatched(p => { const n = new Set(p); saga.arcs.forEach(arc => getArcEpisodes(arc).forEach(ep => mark ? n.add(ep) : n.delete(ep))); return n; }), []);
 
   const getArcStats = arc => {
     const eps = getArcEpisodes(arc);
@@ -180,6 +181,11 @@ export default function App() {
                     <div style={{ width: 60, height: 6, background: t.cardBorder, borderRadius: 3, overflow: "hidden" }}>
                       <div style={{ height: "100%", borderRadius: 3, transition: "width 0.4s", width: `${ss.pct}%`, background: saga.color }} />
                     </div>
+                    <HoverButton
+                      baseStyle={{ padding: "5px 10px", fontSize: 11, fontWeight: 600, borderRadius: 6, border: `1px solid ${saga.color}44`, background: "transparent", color: saga.color, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap" }}
+                      hoverStyle={{ background: `${saga.color}18` }}
+                      onClick={e => { e.stopPropagation(); markSaga(saga, !isComplete); }}
+                    >{isComplete ? "Unmark All" : "Mark All"}</HoverButton>
                     <span style={{ fontSize: 10, color: t.textMuted, transition: "transform 0.2s ease", transform: isOpen ? "rotate(180deg)" : "none" }}>▼</span>
                   </div>
                 </div>

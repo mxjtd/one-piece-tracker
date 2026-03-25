@@ -7,6 +7,8 @@ export default function HoverButton({ baseStyle, hoverStyle, children, ...props 
       {...props}
       onPointerEnter={() => setH(true)}
       onPointerLeave={() => setH(false)}
+      onFocus={() => setH(true)}
+      onBlur={() => setH(false)}
       style={{ ...baseStyle, ...(h ? hoverStyle : {}), transition: "all 0.15s ease" }}
     >
       {children}

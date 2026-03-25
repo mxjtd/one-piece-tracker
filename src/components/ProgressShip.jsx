@@ -18,16 +18,18 @@ export default function ProgressShip({ pct }) {
 
   if (pct < 3) return null;
   return (
-    <span
+    <button
       onClick={handleClick}
+      aria-label="Luffy wants meat"
       style={{
         position: "absolute", right: -8, top: -14, fontSize: 20, cursor: "pointer", userSelect: "none",
+        background: "none", border: "none", padding: 0, lineHeight: 1,
         transition: "transform 0.2s ease, filter 0.2s ease",
         transform: bouncing ? "translateY(-10px) rotate(-12deg) scale(1.2)" : "none",
         filter: bouncing ? "drop-shadow(0 6px 12px rgba(212,164,76,0.6))" : "none",
       }}
     >
       {bouncing ? meats[idx] : "🚢"}
-    </span>
+    </button>
   );
 }

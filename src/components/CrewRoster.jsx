@@ -8,8 +8,9 @@ export default function CrewRoster({ watched, t }) {
         const unlocked = watched.has(member.ep);
         const bountyVisible = maxWatched >= member.bountyEp;
         return (
-          <div
+          <article
             key={member.name}
+            aria-label={unlocked ? `${member.name}, ${member.role}` : `Locked crew member, unlocks at episode ${member.ep}`}
             style={{
               background: unlocked ? t.card : t.cardAlt,
               border: `1px solid ${t.cardBorder}`,
@@ -24,14 +25,14 @@ export default function CrewRoster({ watched, t }) {
               animation: unlocked ? "crewUnlock 0.4s ease" : "none",
             }}
           >
-            <div style={{ fontSize: 36, lineHeight: 1, flexShrink: 0, width: 44, textAlign: "center" }}>
+            <div aria-hidden="true" style={{ fontSize: 36, lineHeight: 1, flexShrink: 0, width: 44, textAlign: "center" }}>
               {unlocked ? member.emoji : "❓"}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
-                <span style={{ fontSize: 16, fontWeight: 700, color: t.text }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: t.text, margin: 0 }}>
                   {unlocked ? member.name : "???"}
-                </span>
+                </h3>
                 <span style={{ fontSize: 10, fontWeight: 600, color: unlocked ? t.accent : t.textMuted, letterSpacing: 1, textTransform: "uppercase", background: unlocked ? `${t.accent}18` : "transparent", padding: "2px 8px", borderRadius: 20, border: `1px solid ${unlocked ? t.accent + "44" : t.cardBorder}` }}>
                   {unlocked ? member.role : "???"}
                 </span>
@@ -45,13 +46,13 @@ export default function CrewRoster({ watched, t }) {
                   {bountyVisible && (
                     <>
                       <span style={{ margin: "0 6px", opacity: 0.4 }}>·</span>
-                      <span>🏴 {member.bounty} Berry</span>
+                      <span><span aria-hidden="true">🏴</span> {member.bounty} Berry</span>
                     </>
                   )}
                 </div>
               )}
             </div>
-          </div>
+          </article>
         );
       })}
     </div>

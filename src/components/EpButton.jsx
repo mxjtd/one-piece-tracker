@@ -7,6 +7,8 @@ export default function EpButton({ ep, isW, isFiller, color, onClick, t }) {
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      aria-label={`Episode ${ep}${isFiller ? ", filler" : ""}${isW ? ", watched" : ""}`}
+      aria-pressed={isW}
       style={{
         width: 46, minHeight: 44, border: "1px solid", borderRadius: 8, cursor: "pointer",
         fontFamily: "'Outfit',sans-serif", position: "relative", display: "flex",
@@ -18,9 +20,9 @@ export default function EpButton({ ep, isW, isFiller, color, onClick, t }) {
         boxShadow: hovered && !isW ? "0 4px 12px rgba(0,0,0,0.15)" : isW ? `0 2px 8px ${color}44` : "none",
       }}
     >
-      <span style={{ fontSize: 13, fontWeight: 600 }}>{ep}</span>
-      {isFiller && <span style={{ fontSize: 8, position: "absolute", bottom: 2, color: t.fillerText, fontWeight: 500 }}>FILLER</span>}
-      {isW && <span style={{ position: "absolute", top: 1, right: 3, fontSize: 8, fontWeight: 700 }}>✓</span>}
+      <span aria-hidden="true" style={{ fontSize: 13, fontWeight: 600 }}>{ep}</span>
+      {isFiller && <span aria-hidden="true" style={{ fontSize: 8, position: "absolute", bottom: 2, color: t.fillerText, fontWeight: 500 }}>FILLER</span>}
+      {isW && <span aria-hidden="true" style={{ position: "absolute", top: 1, right: 3, fontSize: 8, fontWeight: 700 }}>✓</span>}
     </button>
   );
 }

@@ -175,10 +175,11 @@ export default function App() {
               baseStyle={{ width: 40, height: 40, borderRadius: 12, border: `1px solid ${t.inputBorder}`, background: t.inputBg, cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}
               hoverStyle={{ transform: "rotate(20deg)", boxShadow: `0 2px 12px ${t.accent}33` }}
               onClick={() => setMode(m => m === "dark" ? "light" : "dark")}
+              aria-label={`Switch to ${mode === "dark" ? "light" : "dark"} mode`}
             >{mode === "dark" ? "☀️" : "🌙"}</HoverButton>
-            <div style={{ display: "flex", background: t.pillBg, borderRadius: 20, overflow: "hidden", border: `1px solid ${t.pillBorder}` }}>
+            <div role="tablist" aria-label="Navigation" style={{ display: "flex", background: t.pillBg, borderRadius: 20, overflow: "hidden", border: `1px solid ${t.pillBorder}` }}>
               {[["sagas", "Arcs"], ["crew", "Crew"], ["stats", "Stats"], ["pace", "Pace"]].map(([v, label]) => (
-                <button key={v} onClick={() => setView(v)} style={{ padding: "8px 18px", fontSize: 14, fontWeight: view === v ? 600 : 400, background: view === v ? `${t.accent}22` : "none", color: view === v ? t.accent : t.textMuted, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", transition: "all 0.15s ease" }}>
+                <button key={v} role="tab" aria-selected={view === v} onClick={() => setView(v)} style={{ padding: "8px 18px", fontSize: 14, fontWeight: view === v ? 600 : 400, background: view === v ? `${t.accent}22` : "none", color: view === v ? t.accent : t.textMuted, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", transition: "all 0.15s ease" }}>
                   {label}
                 </button>
               ))}
@@ -238,7 +239,11 @@ export default function App() {
             return (
               <div key={saga.name} style={{ background: t.card, borderTop: `1px solid ${t.cardBorder}`, borderRight: `1px solid ${t.cardBorder}`, borderBottom: `1px solid ${t.cardBorder}`, borderLeft: `3px solid ${saga.color}`, borderRadius: 12, overflow: "hidden", transition: "all 0.6s ease" }}>
                 <div
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={isOpen}
                   onClick={() => setExpandedSaga(isOpen ? null : saga.name)}
+                  onKeyDown={e => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), setExpandedSaga(isOpen ? null : saga.name))}
                   onMouseEnter={() => setHoveredSaga(saga.name)}
                   onMouseLeave={() => setHoveredSaga(null)}
                   style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 18px", cursor: "pointer", userSelect: "none", transition: "background 0.15s ease", borderRadius: 12, background: hoveredSaga === saga.name ? t.cardHover : "transparent" }}
@@ -269,7 +274,11 @@ export default function App() {
                       return (
                         <div key={arcKey} style={{ background: t.cardAlt, border: `1px solid ${arcComplete ? saga.color + "55" : t.cardBorder}`, borderRadius: 10, overflow: "hidden", transition: "all 0.6s ease" }}>
                           <div
+                            role="button"
+                            tabIndex={0}
+                            aria-expanded={arcOpen}
                             onClick={() => setExpandedArc(arcOpen ? null : arcKey)}
+                            onKeyDown={e => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), setExpandedArc(arcOpen ? null : arcKey))}
                             onMouseEnter={() => setHoveredArc(arcKey)}
                             onMouseLeave={() => setHoveredArc(null)}
                             style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", cursor: "pointer", userSelect: "none", transition: "background 0.15s ease", borderRadius: 10, background: hoveredArc === arcKey ? t.arcHover : "transparent" }}

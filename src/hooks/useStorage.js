@@ -11,7 +11,7 @@ export function loadStorage() {
   }
 }
 
-export function useStorageSync(watched, skipFiller, mode, seenMilestones, loaded, targetDate, dailyPace) {
+export function useStorageSync(watched, skipFiller, mode, seenMilestones, loaded, targetDate, dailyPace, arcRatings) {
   const timerRef = useRef(null);
 
   useEffect(() => {
@@ -28,10 +28,11 @@ export function useStorageSync(watched, skipFiller, mode, seenMilestones, loaded
             seenMilestones: [...seenMilestones],
             targetDate: targetDate ? targetDate.toISOString() : null,
             dailyPace,
+            arcRatings,
           })
         );
       } catch {}
     }, 300);
     return () => clearTimeout(timerRef.current);
-  }, [watched, skipFiller, mode, seenMilestones, loaded, targetDate, dailyPace]);
+  }, [watched, skipFiller, mode, seenMilestones, loaded, targetDate, dailyPace, arcRatings]);
 }

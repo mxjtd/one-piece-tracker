@@ -9,6 +9,7 @@ import HoverButton from "./components/HoverButton";
 import Toast from "./components/Toast";
 import ProgressShip from "./components/ProgressShip";
 import CrewRoster from "./components/CrewRoster";
+import ArcRating, { Stars } from "./components/ArcRating";
 
 const TOAST_DURATION = 3500;
 const markAllStyle = color => ({ padding: "5px 10px", fontSize: 11, fontWeight: 600, borderRadius: 6, border: `1px solid ${color}44`, background: "transparent", color, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap" });
@@ -34,6 +35,7 @@ export default function App() {
   const [paceMode, setPaceMode] = useState("date");
   const [targetDate, setTargetDate] = useState(null);
   const [dailyPace, setDailyPace] = useState(1);
+  const [arcRatings, setArcRatings] = useState({});
   const toastTimer = useRef(null);
   const t = themes[mode];
 
@@ -47,11 +49,12 @@ export default function App() {
       if (d.seenCrewToasts) setSeenCrewToasts(new Set(d.seenCrewToasts));
       if (d.targetDate) setTargetDate(new Date(d.targetDate));
       if (d.dailyPace) setDailyPace(d.dailyPace);
+      if (d.arcRatings) setArcRatings(d.arcRatings);
     }
     setLoaded(true);
   }, []);
 
-  useStorageSync(watched, skipFiller, mode, seenMilestones, loaded, targetDate, dailyPace, seenCrewToasts);
+  useStorageSync(watched, skipFiller, mode, seenMilestones, loaded, targetDate, dailyPace, seenCrewToasts, arcRatings);
 
   useEffect(() => {
     document.body.style.backgroundColor = mode === "dark" ? "#080E1A" : "#F5F0EB";
@@ -127,6 +130,27 @@ export default function App() {
     saga.arcs.forEach(a => { const s = getArcStats(a); done += s.done; total += s.total; });
     return { done, total, pct: total > 0 ? (done / total) * 100 : 0 };
   };
+
+  const rateArc = useCallback((key, stars) => {
+    setArcRatings(prev => {
+      const next = { ...prev };
+      if (stars === null) delete next[key];
+      else next[key] = stars;
+      return next;
+    });
+  }, []);
+
+  const rankedArcs = useMemo(() => {
+    return Object.entries(arcRatings)
+      .sort(([, a], [, b]) => b - a)
+      .map(([key, stars]) => {
+        const dash = key.indexOf("-");
+        const sagaName = key.slice(0, dash);
+        const arcName = key.slice(dash + 1);
+        const saga = SAGAS.find(s => s.name === sagaName);
+        return { key, stars, sagaName, arcName, color: saga?.color ?? "#D4A44C" };
+      });
+  }, [arcRatings]);
 
   if (!loaded) return (
     <div style={{ minHeight: "100vh", background: t.loadBg, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12 }}>
@@ -278,6 +302,9 @@ export default function App() {
                                   return <EpButton key={ep} ep={ep} isW={watched.has(ep)} isFiller={FILLER_EPS.has(ep)} color={saga.color} onClick={() => toggleEp(ep)} t={t} />;
                                 })}
                               </div>
+                              {arcComplete && (
+                                <ArcRating arcKey={arcKey} currentRating={arcRatings[arcKey]} onRate={rateArc} color={saga.color} t={t} />
+                              )}
                             </div>
                           )}
                         </div>
@@ -381,6 +408,27 @@ export default function App() {
             ))}
           </div>
 
+          <h2 style={{ fontSize: 12, letterSpacing: 3, color: t.textMuted, fontWeight: 600, marginBottom: 14, marginTop: 28 }}>ARC RATINGS</h2>
+          {rankedArcs.length === 0 ? (
+            <p style={{ fontSize: 13, color: t.textMuted, fontStyle: "italic" }}>Complete an arc to leave a rating.</p>
+          ) : (
+            <div style={{ background: t.card, border: `1px solid ${t.cardBorder}`, borderRadius: 12, overflow: "hidden" }}>
+              {rankedArcs.map(({ key, stars, sagaName, arcName, color }, i) => (
+                <div key={key} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderBottom: i < rankedArcs.length - 1 ? `1px solid ${t.cardBorder}` : "none" }}>
+                  <span style={{ fontSize: 12, color: t.textMuted, fontWeight: 700, width: 24, flexShrink: 0 }}>#{i + 1}</span>
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: color, flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: t.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{arcName}</div>
+                    <div style={{ fontSize: 11, color: t.textMuted }}>{sagaName}</div>
+                  </div>
+                  <div style={{ display: "flex", gap: 2, flexShrink: 0 }}>
+                    <Stars filled={stars} color={color} size={16} muted={t.textDim} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           <h2 style={{ fontSize: 12, letterSpacing: 3, color: t.textMuted, fontWeight: 600, marginBottom: 14, marginTop: 28 }}>MILESTONES</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {MILESTONES.map(m => { const unlocked = watched.has(m.ep); return (
@@ -401,7 +449,7 @@ export default function App() {
         <HoverButton
           baseStyle={{ background: "none", border: `1px solid ${t.dangerBorder}`, color: "#EF4444", padding: "10px 22px", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "'Outfit',sans-serif", opacity: 0.6 }}
           hoverStyle={{ opacity: 1, background: "#EF444411" }}
-          onClick={() => { if (confirm("Reset ALL progress?")) { setWatched(new Set()); setSeenMilestones(new Set()); setSeenCrewToasts(new Set([1])); } }}
+          onClick={() => { if (confirm("Reset ALL progress?")) { setWatched(new Set()); setSeenMilestones(new Set()); setSeenCrewToasts(new Set([1])); setArcRatings({}); } }}
         >
           Reset All Progress
         </HoverButton>

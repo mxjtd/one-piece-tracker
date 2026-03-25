@@ -74,6 +74,29 @@ export const MILESTONES = [
   { ep: 1155, emoji: "👑", msg: "ALL EPISODES COMPLETE! The future Pirate King!" },
 ];
 
+export const CREW_MEMBERS = [
+  { name: "Luffy",   role: "Captain",       ep: 1,   emoji: "🏴‍☠️", bounty: "3,000,000,000", bountyEp: 1088, joinMsg: null,
+    bio: "The future King of the Pirates. Powered by the Gum-Gum Fruit and an unbreakable will, he fights for his crew above all else." },
+  { name: "Zoro",    role: "Swordsman",     ep: 3,   emoji: "⚔️",  bounty: "1,111,000,000", bountyEp: 1088, joinMsg: "Zoro joins! Nothing can cut him down!",
+    bio: "A relentless swordsman chasing a single goal — to become the greatest in the world. Fights with three swords and never asks for directions." },
+  { name: "Usopp",   role: "Sniper",        ep: 18,  emoji: "🎯",  bounty: "500,000,000",   bountyEp: 746,  joinMsg: "Usopp joins! The brave warrior of the sea!",
+    bio: "The crew's sniper and storyteller. His tall tales hide a genuinely brave heart, and his aim never misses when it counts." },
+  { name: "Sanji",   role: "Cook",          ep: 30,  emoji: "🍳",  bounty: "1,032,000,000", bountyEp: 1088, joinMsg: "Sanji joins! All Blue awaits!",
+    bio: "Master chef and devastating kick fighter who refuses to use his hands in battle. Dreams of finding the All Blue, a sea of every fish in the world." },
+  { name: "Nami",    role: "Navigator",     ep: 36,  emoji: "🗺️",  bounty: "366,000,000",   bountyEp: 1088, joinMsg: "Nami joins! The crew has a navigator!",
+    bio: "Navigator extraordinaire with an obsession for treasure and maps. Her ability to read weather gives the crew an edge no other ship has." },
+  { name: "Chopper", role: "Doctor",        ep: 91,  emoji: "🦌",  bounty: "1,000",         bountyEp: 131,  joinMsg: null,
+    bio: "A reindeer who ate the Human-Human Fruit and became a doctor. Dreams of developing a cure for any disease in the world." },
+  { name: "Robin",   role: "Archaeologist", ep: 130, emoji: "📖",  bounty: "930,000,000",   bountyEp: 1088, joinMsg: "Robin joins! The Poneglyphs' secrets await!",
+    bio: "The only person alive who can read Poneglyphs — stones that hold the world's lost history. Carries a burden older than the crew itself." },
+  { name: "Franky",  role: "Shipwright",    ep: 322, emoji: "🔧",  bounty: "394,000,000",   bountyEp: 1088, joinMsg: "SUPER! Franky joins the Straw Hats!",
+    bio: "A cola-powered cyborg shipwright who built the Thousand Sunny from scratch. Loud, eccentric, and fiercely loyal." },
+  { name: "Brook",   role: "Musician",      ep: 381, emoji: "🎵",  bounty: "383,000,000",   bountyEp: 1088, joinMsg: null,
+    bio: "A skeleton violinist who came back from death with a killer afro. Lighthearted on the surface, but carries fifty years of solitude at sea." },
+  { name: "Jinbe",   role: "Helmsman",      ep: 977, emoji: "🌊",  bounty: "1,100,000,000", bountyEp: 1088, joinMsg: "Jinbe joins! The Straw Hats have a helmsman!",
+    bio: "A Fish-Man karate master, former Warlord of the Sea, and one of the finest helmsmen alive. A man of deep honor and steadfast loyalty." },
+];
+
 export const TOTAL_EPS = 1155;
 export const STORAGE_KEY = "op-full-tracker-v3";
 

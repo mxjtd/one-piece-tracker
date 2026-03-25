@@ -2,12 +2,13 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "./datepicker.css";
-import { SAGAS, FILLER_EPS, MILESTONES, TOTAL_EPS, themes } from "./data";
+import { SAGAS, FILLER_EPS, MILESTONES, CREW_MEMBERS, TOTAL_EPS, themes } from "./data";
 import { loadStorage, useStorageSync } from "./hooks/useStorage";
 import EpButton from "./components/EpButton";
 import HoverButton from "./components/HoverButton";
 import Toast from "./components/Toast";
 import ProgressShip from "./components/ProgressShip";
+import CrewRoster from "./components/CrewRoster";
 
 const TOAST_DURATION = 3500;
 const markAllStyle = color => ({ padding: "5px 10px", fontSize: 11, fontWeight: 600, borderRadius: 6, border: `1px solid ${color}44`, background: "transparent", color, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap" });
@@ -29,6 +30,7 @@ export default function App() {
   const [mode, setMode] = useState("dark");
   const [toast, setToast] = useState(null);
   const [seenMilestones, setSeenMilestones] = useState(new Set());
+  const [seenCrewToasts, setSeenCrewToasts] = useState(new Set([1]));
   const [paceMode, setPaceMode] = useState("date");
   const [targetDate, setTargetDate] = useState(null);
   const [dailyPace, setDailyPace] = useState(1);
@@ -42,13 +44,14 @@ export default function App() {
       if (d.skipFiller !== undefined) setSkipFiller(d.skipFiller);
       if (d.mode) setMode(d.mode);
       if (d.seenMilestones) setSeenMilestones(new Set(d.seenMilestones));
+      if (d.seenCrewToasts) setSeenCrewToasts(new Set(d.seenCrewToasts));
       if (d.targetDate) setTargetDate(new Date(d.targetDate));
       if (d.dailyPace) setDailyPace(d.dailyPace);
     }
     setLoaded(true);
   }, []);
 
-  useStorageSync(watched, skipFiller, mode, seenMilestones, loaded, targetDate, dailyPace);
+  useStorageSync(watched, skipFiller, mode, seenMilestones, loaded, targetDate, dailyPace, seenCrewToasts);
 
   useEffect(() => {
     document.body.style.backgroundColor = mode === "dark" ? "#080E1A" : "#F5F0EB";
@@ -65,6 +68,19 @@ export default function App() {
       }
     }
   }, [watched, seenMilestones]);
+
+  useEffect(() => {
+    for (const m of CREW_MEMBERS) {
+      if (!m.joinMsg) continue;
+      if (watched.has(m.ep) && !seenCrewToasts.has(m.ep)) {
+        setSeenCrewToasts(p => new Set([...p, m.ep]));
+        setToast({ emoji: m.emoji, msg: m.joinMsg });
+        if (toastTimer.current) clearTimeout(toastTimer.current);
+        toastTimer.current = setTimeout(() => setToast(null), TOAST_DURATION);
+        break;
+      }
+    }
+  }, [watched, seenCrewToasts]);
 
   useEffect(() => {
     return () => { if (toastTimer.current) clearTimeout(toastTimer.current); };
@@ -137,9 +153,9 @@ export default function App() {
               onClick={() => setMode(m => m === "dark" ? "light" : "dark")}
             >{mode === "dark" ? "☀️" : "🌙"}</HoverButton>
             <div style={{ display: "flex", background: t.pillBg, borderRadius: 20, overflow: "hidden", border: `1px solid ${t.pillBorder}` }}>
-              {["sagas", "stats"].map(v => (
+              {[["sagas", "Arcs"], ["crew", "Crew"], ["stats", "Stats"], ["pace", "Pace"]].map(([v, label]) => (
                 <button key={v} onClick={() => setView(v)} style={{ padding: "8px 18px", fontSize: 14, fontWeight: view === v ? 600 : 400, background: view === v ? `${t.accent}22` : "none", color: view === v ? t.accent : t.textMuted, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", transition: "all 0.15s ease" }}>
-                  {v === "sagas" ? "Arcs" : "Stats"}
+                  {label}
                 </button>
               ))}
             </div>
@@ -182,6 +198,13 @@ export default function App() {
       </div>
 
       {/* MAIN CONTENT */}
+      {view === "crew" && (
+        <div style={{ maxWidth: 800, margin: "20px auto 0", padding: "0 20px" }}>
+          <h2 style={{ fontSize: 12, letterSpacing: 3, color: t.textMuted, fontWeight: 600, marginBottom: 6, marginTop: 0 }}>STRAW HAT CREW</h2>
+          <p style={{ fontSize: 13, color: t.textMuted, marginBottom: 16 }}>Crew members unlock as you watch their recruitment episode.</p>
+          <CrewRoster watched={watched} t={t} />
+        </div>
+      )}
       {view === "sagas" ? (
         <div style={{ maxWidth: 800, margin: "16px auto 0", padding: "0 20px", display: "flex", flexDirection: "column", gap: 8 }}>
           {SAGAS.map(saga => {
@@ -266,43 +289,10 @@ export default function App() {
             );
           })}
         </div>
-      ) : (
+      ) : view === "crew" ? null : view === "pace" ? (
         <div style={{ maxWidth: 800, margin: "20px auto 0", padding: "0 20px" }}>
-          <h2 style={{ fontSize: 12, letterSpacing: 3, color: t.textMuted, fontWeight: 600, marginBottom: 14, marginTop: 0 }}>SAGA BREAKDOWN</h2>
-          {SAGAS.map(saga => { const ss = getSagaStats(saga); return (
-            <div key={saga.name} style={{ marginBottom: 12 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-                <div style={{ width: 8, height: 8, borderRadius: "50%", background: saga.color, flexShrink: 0 }} />
-                <span style={{ fontSize: 15, fontWeight: 600, color: t.text, flex: 1 }}>{saga.name}</span>
-                <span style={{ fontSize: 14, color: t.textMuted }}>{ss.done}/{ss.total}</span>
-              </div>
-              <div style={{ width: "100%", height: 8, background: t.card, borderRadius: 4, overflow: "hidden", border: `1px solid ${t.cardBorder}` }}>
-                <div style={{ height: "100%", borderRadius: 4, transition: "width 0.4s", width: `${ss.pct}%`, background: saga.color }} />
-              </div>
-            </div>
-          ); })}
-
-          <h2 style={{ fontSize: 12, letterSpacing: 3, color: t.textMuted, fontWeight: 600, marginBottom: 14, marginTop: 28 }}>QUICK FACTS</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10 }}>
-            {[
-              { n: TOTAL_EPS, l: "Total Episodes" },
-              { n: allCanonEps.length, l: "Canon Episodes" },
-              { n: FILLER_EPS.size, l: "Filler Episodes" },
-              { n: SAGAS.length, l: "Sagas" },
-              { n: SAGAS.reduce((a, s) => a + s.arcs.length, 0), l: "Story Arcs" },
-              { n: `~${Math.round((allCanonEps.length * 24) / 60)}h`, l: "Canon Runtime" },
-            ].map((f, i) => (
-              <div key={i} style={{ background: t.card, border: `1px solid ${t.cardBorder}`, borderRadius: 12, padding: "16px 12px", textAlign: "center", transition: "all 0.6s ease" }}>
-                <div style={{ fontSize: 24, fontWeight: 800, color: t.accent }}>{f.n}</div>
-                <div style={{ fontSize: 11, color: t.textMuted, letterSpacing: 1, textTransform: "uppercase", marginTop: 4 }}>{f.l}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* WATCH PACE CALCULATOR */}
-          <h2 style={{ fontSize: 12, letterSpacing: 3, color: t.textMuted, fontWeight: 600, marginBottom: 14, marginTop: 28 }}>WATCH PACE CALCULATOR</h2>
+          <h2 style={{ fontSize: 12, letterSpacing: 3, color: t.textMuted, fontWeight: 600, marginBottom: 14, marginTop: 0 }}>WATCH PACE CALCULATOR</h2>
           <div style={{ background: t.card, border: `1px solid ${t.cardBorder}`, borderRadius: 12, padding: "20px", marginBottom: 28, "--dp-bg": t.card, "--dp-header": t.cardAlt, "--dp-border": t.cardBorder, "--dp-text": t.text, "--dp-muted": t.textMuted, "--dp-hover": t.cardHover, "--dp-accent": t.accent }}>
-            {/* Mode pill toggle */}
             <div style={{ display: "flex", background: t.pillBg, borderRadius: 20, overflow: "hidden", border: `1px solid ${t.pillBorder}`, width: "fit-content", marginBottom: 20 }}>
               {[{ val: "date", label: "By Date" }, { val: "pace", label: "By Pace" }].map(opt => (
                 <button key={opt.val} onClick={() => setPaceMode(opt.val)} style={{ padding: "7px 18px", fontSize: 13, fontWeight: paceMode === opt.val ? 600 : 400, background: paceMode === opt.val ? `${t.accent}22` : "none", color: paceMode === opt.val ? t.accent : t.textMuted, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", transition: "all 0.15s ease" }}>
@@ -310,7 +300,6 @@ export default function App() {
                 </button>
               ))}
             </div>
-
             {paceMode === "date" ? (() => {
               const today = new Date(); today.setHours(0,0,0,0);
               const daysLeft = targetDate ? Math.ceil((targetDate - today) / 86400000) : null;
@@ -323,15 +312,8 @@ export default function App() {
                   <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                     <label style={{ fontSize: 14, color: t.textSoft, fontWeight: 500 }}>Target date</label>
                     <div className="op-datepicker">
-                      <DatePicker
-                        selected={targetDate}
-                        onChange={date => setTargetDate(date)}
-                        minDate={new Date()}
-                        placeholderText="Pick a date"
-                        dateFormat="MMM d, yyyy"
-                        customInput={
-                          <input style={{ background: t.inputBg, border: `1px solid ${t.inputBorder}`, borderRadius: 8, padding: "7px 12px", fontSize: 14, color: t.text, fontFamily: "'Outfit',sans-serif", cursor: "pointer", outline: "none", width: 150 }} />
-                        }
+                      <DatePicker selected={targetDate} onChange={date => setTargetDate(date)} minDate={new Date()} placeholderText="Pick a date" dateFormat="MMM d, yyyy"
+                        customInput={<input style={{ background: t.inputBg, border: `1px solid ${t.inputBorder}`, borderRadius: 8, padding: "7px 12px", fontSize: 14, color: t.text, fontFamily: "'Outfit',sans-serif", cursor: "pointer", outline: "none", width: 150 }} />}
                       />
                     </div>
                     {targetDate && <span style={{ fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 20, background: `${statusColor}22`, color: statusColor }}>{statusLabel}</span>}
@@ -379,6 +361,25 @@ export default function App() {
               );
             })()}
           </div>
+        </div>
+      ) : (
+        <div style={{ maxWidth: 800, margin: "20px auto 0", padding: "0 20px" }}>
+          <h2 style={{ fontSize: 12, letterSpacing: 3, color: t.textMuted, fontWeight: 600, marginBottom: 14, marginTop: 0 }}>QUICK FACTS</h2>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10 }}>
+            {[
+              { n: TOTAL_EPS, l: "Total Episodes" },
+              { n: allCanonEps.length, l: "Canon Episodes" },
+              { n: FILLER_EPS.size, l: "Filler Episodes" },
+              { n: SAGAS.length, l: "Sagas" },
+              { n: SAGAS.reduce((a, s) => a + s.arcs.length, 0), l: "Story Arcs" },
+              { n: `~${Math.round((allCanonEps.length * 24) / 60)}h`, l: "Canon Runtime" },
+            ].map((f, i) => (
+              <div key={i} style={{ background: t.card, border: `1px solid ${t.cardBorder}`, borderRadius: 12, padding: "16px 12px", textAlign: "center", transition: "all 0.6s ease" }}>
+                <div style={{ fontSize: 24, fontWeight: 800, color: t.accent }}>{f.n}</div>
+                <div style={{ fontSize: 11, color: t.textMuted, letterSpacing: 1, textTransform: "uppercase", marginTop: 4 }}>{f.l}</div>
+              </div>
+            ))}
+          </div>
 
           <h2 style={{ fontSize: 12, letterSpacing: 3, color: t.textMuted, fontWeight: 600, marginBottom: 14, marginTop: 28 }}>MILESTONES</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -400,7 +401,7 @@ export default function App() {
         <HoverButton
           baseStyle={{ background: "none", border: `1px solid ${t.dangerBorder}`, color: "#EF4444", padding: "10px 22px", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "'Outfit',sans-serif", opacity: 0.6 }}
           hoverStyle={{ opacity: 1, background: "#EF444411" }}
-          onClick={() => { if (confirm("Reset ALL progress?")) { setWatched(new Set()); setSeenMilestones(new Set()); } }}
+          onClick={() => { if (confirm("Reset ALL progress?")) { setWatched(new Set()); setSeenMilestones(new Set()); setSeenCrewToasts(new Set([1])); } }}
         >
           Reset All Progress
         </HoverButton>

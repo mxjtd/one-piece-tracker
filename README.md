@@ -13,8 +13,11 @@ A web app for tracking your progress through the One Piece anime — all 1,155 e
 - **Progress visualization** — grand progress bar, per-saga and per-arc bars
 - **Watch pace calculator** — set a target date or daily pace to project your finish
 - **Milestone toasts** — unlock notifications at 13 key story moments
-- **Stats view** — saga breakdown, quick facts, milestones achievement list
+- **Crew tracker** — Straw Hat crew members unlock as you watch their recruitment episode, with spoiler-gated bounties
+- **Arc ratings** — rate completed arcs 1–5 stars (half-star support) with a personal ranking in Stats
+- **Stats view** — quick facts, arc ratings leaderboard, milestones achievement list
 - **Light/dark mode** — full theme switching with nautical-inspired palettes
+- **Accessible** — WCAG AA compliant: keyboard navigation, screen reader support, visible focus indicators
 - **Persistent storage** — all progress saves automatically via localStorage
 
 ## Development
@@ -28,7 +31,7 @@ npm run preview   # preview production build locally
 
 ## Stack
 
-- React 18 + Vite
+- React 19 + Vite
 - Inline styles with token-based theme system
 - localStorage for persistence
 - Deployed on Netlify via GitHub integration

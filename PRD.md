@@ -1,7 +1,7 @@
 # Product Requirements Document
 ## One Piece Episode Tracker
 
-**Version:** 1.1
+**Version:** 1.2
 **Last Updated:** March 2026
 **Author:** JT Dumproff
 **Status:** In Development
@@ -91,18 +91,17 @@ Full theme switching between a dark nautical theme and a warm parchment-inspired
 13 milestones tied to key narrative moments. Toast notification animates in when a milestone episode is watched. Milestones display in the Stats view as a locked/unlocked achievement list.
 
 #### 3.2.3 Stats View ✅
-Alternate view (toggled via Arcs/Stats pill selector) with:
-- Per-saga progress bars with episode counts
+Dedicated Stats tab with:
 - Quick facts grid (total episodes, canon count, filler count, sagas, arcs, estimated runtime)
+- Arc ratings leaderboard (ranked by user rating)
 - Milestones achievement list
-- Watch Pace Calculator (see 3.2.5)
 
 #### 3.2.4 Easter Eggs ✅
 - Clickable ship on the progress bar with escalating Luffy-style meat demands
 - Additional easter eggs TBD
 
 #### 3.2.5 Watch Pace Calculator ✅ *(added v1.1)*
-Two-mode calculator in the Stats tab:
+Two-mode calculator in the dedicated Pace tab:
 - **By Date:** Set a target completion date → shows episodes/day needed, days left, status chip (chill/on track/ambitious)
 - **By Pace:** Set episodes/day → shows estimated finish date and days to completion
 - Themed date picker (react-datepicker) matching dark/light mode
@@ -110,16 +109,24 @@ Two-mode calculator in the Stats tab:
 
 ---
 
-### 3.3 Future Features (P2)
+### 3.3 Secondary Features (P2) — ✅ Complete
 
-#### 3.3.1 Crew Recruitment Tracker
-Visual roster of Straw Hat crew members that "join" as the user watches. Each member appears at their recruitment episode. Reinforces the emotional journey of building the crew.
+#### 3.3.1 Crew Recruitment Tracker ✅ *(added v1.2)*
+Visual roster of Straw Hat crew members on a dedicated Crew tab. Members unlock at their recruitment episode with biography, role badge, and spoiler-gated bounty (hidden until the user reaches the relevant episode).
 
-#### 3.3.2 Arc Rating System
-After completing an arc, users rate it 1–5 stars. Ratings displayed in Stats view as a personal arc ranking.
+#### 3.3.2 Arc Rating System ✅ *(added v1.2)*
+After completing an arc, users rate it 1–5 stars with half-star (0.5 increment) support. Interactive star UI with hover preview. Ratings persist to localStorage and display as a personal arc ranking in the Stats tab.
 
-#### 3.3.3 Accessibility Audit
-WCAG AA compliance review, keyboard navigation support, focus state improvements.
+#### 3.3.3 Accessibility Audit ✅ *(added v1.2)*
+WCAG AA compliance across all components:
+- Global `:focus-visible` outline for keyboard users
+- `role="status"` + `aria-live="polite"` on Toast for screen reader announcements
+- `role="tablist"` / `role="tab"` / `aria-selected` on navigation
+- `role="button"` + `tabIndex` + `aria-expanded` + keyboard handlers (Enter/Space) on saga/arc expand headers
+- `aria-label` / `aria-pressed` on episode buttons, star rating buttons, theme toggle
+- `<article>` + `<h3>` semantic structure in Crew Roster
+- `aria-hidden` on all decorative emojis and icons
+- `onFocus`/`onBlur` on HoverButton to mirror hover styles for keyboard focus
 
 #### 3.3.4 Arc-Level Crunchyroll Link *(suggested by community)*
 A "Watch on Crunchyroll" link per arc opening the One Piece series page. Arc-level rather than episode-level due to Crunchyroll's non-predictable episode URL structure.
@@ -191,13 +198,13 @@ A "Watch on Crunchyroll" link per arc opening the One Piece series page. Arc-lev
 ### Phase 1 — Foundation ✅ Complete
 Episode tracking, saga/arc hierarchy, filler management, progress visualization, light/dark theme, milestone system, stats view, interaction polish, localStorage persistence, Netlify deployment.
 
-### Phase 2 — Enrichment 🔄 In Progress
+### Phase 2 — Enrichment ✅ Complete
 - ✅ Watch pace calculator
 - ✅ Saga-level mark all watched
-- ⬜ Crew recruitment visual tracker
-- ⬜ Arc rating system
-- ⬜ WCAG AA accessibility audit
-- ⬜ Keyboard navigation support
+- ✅ Crew recruitment visual tracker
+- ✅ Arc rating system (with half-star support)
+- ✅ WCAG AA accessibility audit
+- ✅ Keyboard navigation support
 
 ### Phase 3 — Social & Engagement
 - ⬜ Social sharing cards
